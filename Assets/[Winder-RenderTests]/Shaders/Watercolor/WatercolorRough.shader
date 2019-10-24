@@ -44,6 +44,7 @@ Shader "Watercolor/Rough"
                 float3 normal : NORMAL;
                 float3 viewDir : TEXCOORD2;
                 float4 screenPos : TEXCOORD4;
+                float3 worldPos : TEXCOORD5;
             };
             
             uniform float4 _MainTex_ST;
@@ -57,6 +58,7 @@ Shader "Watercolor/Rough"
                 o.viewDir = ObjSpaceViewDir(v.vertex);
                 o.normal = v.normal;
                 o.screenPos = ComputeScreenPos(UnityObjectToClipPos (v.vertex));
+                o.worldPos = mul (unity_ObjectToWorld, v.vertex);
                 
                 return o;
             }
@@ -152,6 +154,7 @@ Shader "Watercolor/Rough"
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
             o.Alpha = c.a * flaking;
+            o.Emission = DarkenNearZero(IN.worldPos);
         }
         ENDCG
     }

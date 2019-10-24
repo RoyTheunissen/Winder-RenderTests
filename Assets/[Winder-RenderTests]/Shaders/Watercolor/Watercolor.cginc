@@ -3,6 +3,8 @@
 sampler2D _LightRampTex;
 sampler2D _PerlinTex;
 
+float _NearLightFactor;
+
 float3 rgb2hsv(float3 c) {
   float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
   float4 p = lerp(float4(c.bg, K.wz), float4(c.gb, K.xy), step(c.b, c.g));
@@ -45,6 +47,11 @@ void NoisifyNormals(float4 screenPos, inout SurfaceOutputStandard o)
     fixed3 perlin = tex2D (_PerlinTex, uv);
     
     o.Normal += float3(perlin.yz, 0) * .175;
+}
+
+float DarkenNearZero(float3 worldPos)
+{
+    return lerp(min(0, (worldPos.z - 10 + 1.5) / 10) * 1, 0, _NearLightFactor);
 }
 
 // Main Physically Based BRDF

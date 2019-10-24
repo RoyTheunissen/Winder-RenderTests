@@ -45,7 +45,6 @@
         fixed4 _Color;
         fixed4 _EmissionColor;
         float _HighlightMultiplier;
-        float _NearLightFactor;
 
         // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
@@ -89,7 +88,8 @@
             
             float rimPower = 3.2;
             
-            o.Emission = lerp(min(0, (IN.worldPos.z - 10 + 1.5) / 10) * 1, 0, _NearLightFactor);
+            //o.Emission = lerp(min(0, (IN.worldPos.z - 10 + 1.5) / 10) * 1, 0, _NearLightFactor);
+            o.Emission = DarkenNearZero(IN.worldPos);
             
             // Moving paper texture to post effect
             //o.Emission += (1 - paper.r) * .5;
