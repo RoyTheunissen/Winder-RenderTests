@@ -25,6 +25,28 @@ float valueRamp(float value)
     return tex2D (_LightRampTex, float2(value, 0.5));
 }
 
+float2 GetScreenAlignedUv(float2 screenUv, float repeat = 1, float parallax = 0.23)
+{
+    float width = _ScreenParams.x / _ScreenParams.y;
+    screenUv.x *= width;
+    float2 uvOffset = float2(_WorldSpaceCameraPos.x, _WorldSpaceCameraPos.y) * parallax;
+    return screenUv * repeat + uvOffset;
+}
+
+float2 GetScreenAlignedUv(float4 screenPos, float repeat = 1, float parallax = 0.23)
+{
+    float2 screenUv = (screenPos.xy / max(0.0001, screenPos.w));
+    return GetScreenAlignedUv(screenUv, repeat, parallax);
+}
+
+void NoisifyNormals(float4 screenPos, inout SurfaceOutputStandard o)
+{
+    float2 uv = GetScreenAlignedUv(screenPos, 2);
+    fixed3 perlin = tex2D (_PerlinTex, uv);
+    
+    o.Normal += float3(perlin.yz, 0) * .175;
+}
+
 // Main Physically Based BRDF
 // Derived from Disney work and based on Torrance-Sparrow micro-facet model
 //
@@ -230,15 +252,4 @@ inline void LightingWaterColor_GI (
     Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(s.Smoothness, data.worldViewDir, s.Normal, lerp(unity_ColorSpaceDielectricSpec.rgb, s.Albedo, s.Metallic));
     gi = UnityGI_WaterColor(data, s.Occlusion, s.Normal, g);
 #endif
-}
-
-void NoisifyNormals(float4 screenPos, inout SurfaceOutputStandard o)
-{
-    float2 screenUv = (screenPos.xy / max(0.0001, screenPos.w));
-    float width = _ScreenParams.x / _ScreenParams.y;
-    screenUv.x *= width;
-    float2 uvOffset = float2(_WorldSpaceCameraPos.x, _WorldSpaceCameraPos.y) / 9.5;
-    fixed3 perlin = tex2D (_PerlinTex, screenUv * 2 + uvOffset);
-    
-    o.Normal += float3(perlin.yz, 0) * .175;
 }

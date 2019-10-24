@@ -76,11 +76,9 @@ Shader "Watercolor/Rough"
                 //saturate(pow(rim, 1))
                 ;
                 
-                float2 screenUv = (i.screenPos.xy / max(0.0001, i.screenPos.w));
-                float width = _ScreenParams.x / _ScreenParams.y;
-                screenUv.x *= width;
-                float2 uvOffset = float2(_WorldSpaceCameraPos.x, _WorldSpaceCameraPos.y) / 9.5;
-                fixed3 perlin = tex2D (_PerlinTex, screenUv * 2 + uvOffset);
+                float2 uv = GetScreenAlignedUv(i.screenPos, 2);
+                
+                fixed3 perlin = tex2D (_PerlinTex, uv);
                 
                 float flaking = saturate(lerp(1, perlin, grazing));
                 
@@ -145,11 +143,9 @@ Shader "Watercolor/Rough"
                 //saturate(pow(rim, 1))
                 ;
             
-            float2 screenUv = (IN.screenPos.xy / max(0.0001, IN.screenPos.w));
-            float width = _ScreenParams.x / _ScreenParams.y;
-            screenUv.x *= width;
-            float2 uvOffset = float2(_WorldSpaceCameraPos.x, _WorldSpaceCameraPos.y) / 9.5;
-            fixed3 perlin = tex2D (_PerlinTex, screenUv * 2 + uvOffset);
+            float2 uv = GetScreenAlignedUv(IN.screenPos, 2);
+            
+            fixed3 perlin = tex2D (_PerlinTex, uv);
             
             float flaking = saturate(lerp(1, perlin, grazing));
                 
