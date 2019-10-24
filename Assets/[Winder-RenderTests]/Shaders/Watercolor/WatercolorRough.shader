@@ -69,17 +69,12 @@ Shader "Watercolor/Rough"
             {
                 fixed4 texcol = tex2D( _MainTex, i.uv );
                 
-                // TODO: Try to figure out screenspace fresnel noise
                 half rim = 1.0 - saturate(dot (normalize(i.viewDir), normalize(i.normal)));
-                float grazing =
-                saturate((rim - _GrazingThreshold) / (1 - _GrazingThreshold))
-                //saturate(pow(rim, 1))
-                ;
+                float grazing = saturate((rim - (1 - _GrazingThreshold)) / (_GrazingThreshold));
                 
                 float2 uv = GetScreenAlignedUv(i.screenPos, 2);
                 
                 fixed3 perlin = tex2D (_PerlinTex, uv);
-                
                 float flaking = saturate(lerp(1, perlin, grazing));
                 
                 clip( texcol.a*_Color.a*flaking - _Cutoff );
@@ -138,20 +133,14 @@ Shader "Watercolor/Rough"
             NoisifyNormals(IN.screenPos, o);
             
             half rim = 1.0 - saturate(dot (normalize(IN.viewDir), normalize(o.Normal)));
-            float grazing =
-                saturate((rim - _GrazingThreshold) / (1 - _GrazingThreshold))
-                //saturate(pow(rim, 1))
-                ;
+            float grazing = saturate((rim - (1 - _GrazingThreshold)) / (_GrazingThreshold));
             
             float2 uv = GetScreenAlignedUv(IN.screenPos, 2);
             
             fixed3 perlin = tex2D (_PerlinTex, uv);
-            
             float flaking = saturate(lerp(1, perlin, grazing));
                 
             //o.Emission = _EmissionColor + flaking * float3(1, 0, 0);
-            
-            //NoisifyNormals(IN.screenPos, o);
             
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
@@ -160,8 +149,6 @@ Shader "Watercolor/Rough"
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
             o.Alpha = c.a * flaking;
-            
-            //clip(flaking - _GrazingThreshold);
         }
         ENDCG
     }

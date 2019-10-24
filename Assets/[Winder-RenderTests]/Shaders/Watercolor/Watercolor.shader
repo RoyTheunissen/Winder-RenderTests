@@ -66,8 +66,6 @@
         {
             NoisifyNormals(IN.screenPos, o);
             
-            //fixed3 paper = tex2D (_PaperTex, screenUv * 2 + uvOffset);
-            
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
             
