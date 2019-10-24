@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b59bf77f81f151942bc244859a2fbf1c
+labels:
+- DX11
+- Shaders
+- Atmospherics
+- Fog
+- Lighting
+- Volumetrics
+timeCreated: 1490126200
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

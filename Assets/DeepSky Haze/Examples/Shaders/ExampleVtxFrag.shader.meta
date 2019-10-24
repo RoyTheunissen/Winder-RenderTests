@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 2535d3196bb502c4f8e9aef5a227f4fb
+labels:
+- Volumetrics
+- Lighting
+- Fog
+- Atmospherics
+- Shaders
+- DX11
+timeCreated: 1490126226
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,77 @@
+Version 1.4
+ - Support: minimum supported Unity version now 5.4.
+ - Support: additional multiplier value to make working with small scattering/extinction values easier.
+ - Features: added falloff option to volume lights to allow choice between Unity's falloff or more accurate quadratic.
+ - Features: volume lights have the option of being affected by fog extinction (Light Volume demo scene updated to show this).
+
+Version 1.3.3
+ - Support: allow override context on a View to be set via script.
+ - Support: add SampleLevel support when using Metal on OSX.
+ - Bugfix: correctly handle when MSAA is requested on the camera, but QualitySettings.antiAliasing returns 0.
+ - Bugfix: remove cached directional light transform which was occasionally losing reference.
+ - Bugfix: handle shader precision errors causing divide-by-zero artifacts in Mie/Fog when using very low height falloff values.
+
+Version 1.3.2
+ - Support: update to allow MSAA in Forward mode in Unity 5.5 and above.
+ - Bugfix: additional fixes for stricter PSSL compiler errors when implicit casting (PS4).
+ - Bugfix: correct use of SampleLOD for PS4.
+
+Version 1.3.1
+ - Features: path for Contexts folder is now found dynamically, package can be installed anywhere in project.
+ - Support: switched to using UnityObjectToClipPos in Unity 5.4 and above, avoids warnings in 5.6.
+ - Obsolete: fix for deprecated warning about Camera.hdr in Unity 5.6.
+
+Version 1.3.0
+ - Bugfix: handle black radiance when camera outside all Zones.
+ - Features: switched to using Blue Noise for offsetting samples, for less noticeable repetition.
+ - Features: quarter res. rendering now supported per-View.
+ - Features: atmosphere volumetrics can be toggled independently for fog-only scenarios, saving perf.
+ - Features: atmosphere volumetrics can now use 16, 24 or 32 volume samples.
+ - Features: initial debug GUI available in Editor and development builds to show info on selected View.
+ - Examples: improved Volume Lights example scene with better lighting setup and animation to highlight shadows.
+
+Version 1.2.7
+ - Bugfix: change depth buffer downsampling to give better results with reversed Z in Unity 5.5 and above.
+ - Obsolete: fix for deprecated code warning about SystemInfo.supportsRenderTextures in Unity 5.5 and above.
+
+Version 1.2.6
+ - Bugfix: transparent shader lib wasn't using full RGB from radiance target.
+ - Bugfix: fix for stricter PSSL compiler errors when implicit casting (PS4).
+ - Bugfix: handle flipped Z-buffer range in 5.5 when building light matrix for shadow-casting spotlight volumes.
+
+Version 1.2.5
+ - Bugfix: handle cases where other image effects are setting depth mode to both Depth and DepthNormals.
+ - Feature: added per-View toggle for temporal reprojection for when later effects (eg. AA) also use temporal.
+ - Shaders: handle light matrix name differences between 5.3 and 5.4.
+
+Version 1.2
+ - Bugfix: correctly handle null destination render target when View component is last in blit-chain.
+ - Bugfix: intermediary render targets now use the correct format and gamma settings when not rendering HDR or Linear.
+ - Features: added Light Volume component for rendering local spot & point light volumetrics.
+ - Features: all volumetric rendering moved to command buffers, opaque image effect only used for final upscaling.
+ - Features: using Halton sequence to make sampling the interleaved offsets texture more randomized.
+ - Features: allow toggling Light Volume rendering on a per-View basis.
+ - Examples: added 'Light Volumes' scene demoing features of the Light Volume component.
+
+Version 1.1.5
+ - Bugfix: some skybox 'shader_feature' options were not being included during a build.
+ - Bugfix: destination render target now properly set on finishing blit-chain and depth buffer copied in correct place.
+ - Examples: added 'Skybox And Transparencies' scene demoing skybox flags.
+ - Examples: added version of standard Alpha Blend particle shader supporting atmospherics (also used in demo scene).
+ - Examples: added basic mouse-look controller to cameras (pressing esc. now stops play mode/exits player in build).
+
+Version 1.1
+ - Support: minimum Unity version reduced to 5.2.1 (was 5.3).
+ - Features: added Quick setup window to GameObject menu.
+ - Features: added initial support for different height falloff methods, currently None and Exponential (default).
+ - Features: split atmospherics into components with controls per-DS_HazeView as to which get applied to skybox.
+ - Shaders: re-write of transparent shaders and support library to share functions with main render effect.
+ - Shaders: custom transparent shader GUI, enables metal/spec/gloss and normal maps as needed.
+ - Shaders: skybox shaders for rendering elements with atmospherics computed at full depth.
+ - Shaders: replacement billboard shader for trees made using Unity Tree Creator.		
+ - UI : changed zone colours to make selection clearer.
+ - Examples: added HDR skybox and removed standard assets (tonemapping).
+ - Examples: added preset contexts for use in Quick Setup.
+
+Version 1.0
+ - Initial release.
