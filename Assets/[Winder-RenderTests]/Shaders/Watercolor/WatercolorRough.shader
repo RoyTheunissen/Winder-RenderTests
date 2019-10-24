@@ -74,7 +74,10 @@ Shader "Watercolor/Rough"
                 fixed4 texcol = tex2D( _MainTex, i.uv );
                 
                 half rim = 1.0 - saturate(dot (normalize(i.viewDir), normalize(i.normal)));
-                float grazing = saturate((rim - (1 - _GrazingThreshold)) / (_GrazingThreshold));
+                
+                // Little experiment: modulate grazing threshold by distance.
+                float gt = lerp(_GrazingThreshold * .25, _GrazingThreshold, (i.worldPos.z - 10) / 40);
+                float grazing = saturate((rim - (1 - gt)) / (gt));
                 
                 float2 uv = GetScreenAlignedUv(i.screenPos, 2, _NoiseParallax);
                 
@@ -138,7 +141,10 @@ Shader "Watercolor/Rough"
             NoisifyNormals(IN.screenPos, o);
             
             half rim = 1.0 - saturate(dot (normalize(IN.viewDir), normalize(o.Normal)));
-            float grazing = saturate((rim - (1 - _GrazingThreshold)) / (_GrazingThreshold));
+            
+            // Little experiment: modulate grazing threshold by distance.
+            float gt = lerp(_GrazingThreshold * .25, _GrazingThreshold, (IN.worldPos.z - 10) / 40);
+            float grazing = saturate((rim - (1 - gt)) / (gt));
             
             float2 uv = GetScreenAlignedUv(IN.screenPos, 2, _NoiseParallax);
             
