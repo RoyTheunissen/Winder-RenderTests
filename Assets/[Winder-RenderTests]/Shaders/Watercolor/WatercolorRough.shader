@@ -23,7 +23,7 @@ Shader "Watercolor/Rough"
         Tags {"Queue"="AlphaTest" "IgnoreProjector"="True" "RenderType"="TransparentCutout"}
         LOD 200   
         
-        //Cull Off
+        Cull Off
         
         // Pass to render object as a shadow caster
         Pass {
