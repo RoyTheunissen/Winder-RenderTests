@@ -11,6 +11,7 @@ Shader "Watercolor/Rough"
         _Cutoff ("Alpha cutoff", Range(0,1)) = 0.5
         
         _GrazingThreshold ("Grazing Threshold", Range(0,1)) = 0.5
+        _NoiseParallax ("Noise Parallax", Range(0,1)) = 0.075
         
         [HDR]
         _EmissionColor ("Emission", Color) = (0,0,0,1)
@@ -64,6 +65,7 @@ Shader "Watercolor/Rough"
             uniform fixed _Cutoff;
             uniform fixed4 _Color;
             float _GrazingThreshold;
+            float _NoiseParallax;
             
             float4 frag( v2f i ) : SV_Target
             {
@@ -72,7 +74,7 @@ Shader "Watercolor/Rough"
                 half rim = 1.0 - saturate(dot (normalize(i.viewDir), normalize(i.normal)));
                 float grazing = saturate((rim - (1 - _GrazingThreshold)) / (_GrazingThreshold));
                 
-                float2 uv = GetScreenAlignedUv(i.screenPos, 2);
+                float2 uv = GetScreenAlignedUv(i.screenPos, 2, _NoiseParallax);
                 
                 fixed3 perlin = tex2D (_PerlinTex, uv);
                 float flaking = saturate(lerp(1, perlin, grazing));
@@ -111,6 +113,7 @@ Shader "Watercolor/Rough"
         half _Metallic;
         fixed4 _Color;
         float _GrazingThreshold;
+        float _NoiseParallax;
         
         float4 _EmissionColor;
 
@@ -135,7 +138,7 @@ Shader "Watercolor/Rough"
             half rim = 1.0 - saturate(dot (normalize(IN.viewDir), normalize(o.Normal)));
             float grazing = saturate((rim - (1 - _GrazingThreshold)) / (_GrazingThreshold));
             
-            float2 uv = GetScreenAlignedUv(IN.screenPos, 2);
+            float2 uv = GetScreenAlignedUv(IN.screenPos, 2, _NoiseParallax);
             
             fixed3 perlin = tex2D (_PerlinTex, uv);
             float flaking = saturate(lerp(1, perlin, grazing));

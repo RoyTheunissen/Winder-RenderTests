@@ -1,0 +1,9 @@
+[submodule "Assets/CreateScriptDialog"]
+	path = Assets/CreateScriptDialog
+	url = ../Create-Script-Dialog.git
+[submodule "Assets/Scaffolding"]
+	path = Assets/Scaffolding
+	url = ../Scaffolding.git
+[submodule "Assets/Regiment"]
+	path = Assets/Regiment
+	url = ../Regiment.git
