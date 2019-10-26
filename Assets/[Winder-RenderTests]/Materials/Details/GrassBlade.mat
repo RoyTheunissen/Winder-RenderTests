@@ -11,7 +11,7 @@ Material:
   m_Shader: {fileID: 4800000, guid: a1933ce2ca1800d4485ad00af2b22ad3, type: 3}
   m_ShaderKeywords: _ALPHATEST_ON
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -57,7 +57,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
-    - _Cutoff: 0.5
+    - _Cutoff: 0
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
@@ -66,7 +66,7 @@ Material:
     - _HighlightMultiplier: 1
     - _Metallic: 0
     - _Mode: 1
-    - _NearLightFactor: 1
+    - _NearLightFactor: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _SelectionFactor: 0
@@ -77,4 +77,4 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 0.147, g: 0.147, b: 0.147, a: 1}

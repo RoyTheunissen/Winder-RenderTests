@@ -1,4 +1,4 @@
-﻿Shader "Watercolor/Cutout (Double-sided)"
+﻿Shader "Watercolor/Grass"
 {
     Properties
     {
@@ -20,7 +20,7 @@
 
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
-        #pragma surface surf WaterColor fullforwardshadows alphatest:_Cutoff
+        #pragma surface surf WaterColor fullforwardshadows vertex:vert alphatest:_Cutoff
 
         #include "Watercolor.cginc"
         
@@ -35,6 +35,7 @@
             float3 viewDir;
             float3 worldPos;
             float4 screenPos;
+            float3 vertexColor;
         };
 
         half _Glossiness;
@@ -49,6 +50,13 @@
         UNITY_INSTANCING_BUFFER_START(Props)
             //UNITY_DEFINE_INSTANCED_PROP(float, _SelectionFactor)
         UNITY_INSTANCING_BUFFER_END(Props)
+        
+        void vert (inout appdata_full v, out Input o)
+        {
+            UNITY_INITIALIZE_OUTPUT(Input,o);
+            
+            o.vertexColor = v.color;
+        }
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
@@ -62,7 +70,9 @@
             o.Smoothness = _Glossiness;
             o.Alpha = c.a;
             
-            o.Emission = DarkenNearZero(IN.worldPos) + _EmissionColor;
+            float darknessFactor = GetDarknessFactor(IN.worldPos, -1.0, 0.5);
+            float darknessEmissionPenalty = darknessFactor * (1 - _NearLightFactor) * -1;
+            o.Emission = darknessEmissionPenalty + _EmissionColor * IN.vertexColor;
         }
         ENDCG
     }

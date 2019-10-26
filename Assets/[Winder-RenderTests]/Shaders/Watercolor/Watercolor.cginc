@@ -58,9 +58,15 @@ void NoisifyNormals(float4 screenPos, inout SurfaceOutputStandard o, float densi
     o.Normal += float3(perlin.yz, 0) * magnitude;
 }
 
-float DarkenNearZero(float3 worldPos)
+float GetDarknessFactor(float3 worldPos, float startDistance = -1.5, float falloffDistance = 10)
 {
-    return lerp(min(0, (worldPos.z - 10 + 1.5) / 10) * 1, 0, _NearLightFactor);
+    return 1 - saturate((worldPos.z - startDistance) / falloffDistance);
+}
+
+float DarkenNearZero(float3 worldPos, float startDistance = -1.5, float falloffDistance = 10)
+{
+    float darknessFactor = GetDarknessFactor(worldPos, startDistance, falloffDistance);
+    return darknessFactor * (1 - _NearLightFactor) * -1;
 }
 
 // Main Physically Based BRDF
