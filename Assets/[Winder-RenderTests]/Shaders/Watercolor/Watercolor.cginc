@@ -69,6 +69,49 @@ float DarkenNearZero(float3 worldPos, float startDistance = -1.5, float falloffD
     return darknessFactor * (1 - _NearLightFactor) * -1;
 }
 
+float3 GetObjectPosition()
+{
+    return mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
+}
+
+float GetObjectSeed()
+{
+    float3 objectPosition = GetObjectPosition();
+    return
+        objectPosition.x * 348723.694857389
+        + objectPosition.y * 747374.57248724
+        + objectPosition.z * 5657385.946583
+        ;
+}
+
+float3 GetGrassOffset(float l)
+{
+    float3 offset = 0;
+
+    // Get a nice 'random' seed based on the object position. Not the vertex position.
+    float seed = GetObjectSeed();
+        
+    float pi = 3.14159265359;
+        
+    // Vary the length.
+    float mode = .5 + sin(pi * seed * 9.6436) * .5;
+    offset.y += lerp(-.275, 0, mode * mode) * l;
+    
+    // Lean the blade forward or backward.
+    float mode2 = sin(pi * seed);
+    float lean = lerp(.2, .3, 1 - pow(1 - mode2, 2)) * sign(mode2);
+    offset.z += pow(l, 2) * lean;
+    offset.z += sin(pi * l) * -lean * .5;
+    
+    // Droop a bit.
+    float mode3 = sin(pi * seed * 934.342);
+    float droop = mode3 * pow(l, 4);
+    offset.y -= abs(droop) * .3;
+    offset.z += lean * droop * 1.5;
+    
+    return offset;
+}
+
 // Main Physically Based BRDF
 // Derived from Disney work and based on Torrance-Sparrow micro-facet model
 //
