@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: GrassBlade Randomized
-  m_Shader: {fileID: 4800000, guid: 005f1fd25b1efd941950fcd1ac99336e, type: 3}
+  m_Shader: {fileID: 4800000, guid: ff8486e12c1c63f4eb48e894d058fd36, type: 3}
   m_ShaderKeywords: _ALPHATEST_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
@@ -77,4 +77,4 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0.306, g: 0.306, b: 0.306, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
