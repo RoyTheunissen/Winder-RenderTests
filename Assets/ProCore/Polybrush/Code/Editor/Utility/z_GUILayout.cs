@@ -359,6 +359,19 @@ namespace Polybrush
 
 			return ret;
 		}
+		
+		public static int IntSlider(GUIContent gc, int value, int min, int max, params GUILayoutOption[] options)
+		{
+			GUILayout.BeginHorizontal();
+
+			GUILayout.Label(gc);
+			GUILayout.FlexibleSpace();
+			int ret = EditorGUILayout.IntSlider(value, min, max, GUILayout.MaxWidth(EditorGUIUtility.currentViewWidth / 2));
+
+			GUILayout.EndHorizontal();
+
+			return ret;
+		}
 
 		public static Color ColorField(GUIContent gc, Color color)
 		{

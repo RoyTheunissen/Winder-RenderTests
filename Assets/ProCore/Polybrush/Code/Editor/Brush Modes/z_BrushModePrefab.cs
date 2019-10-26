@@ -1,8 +1,11 @@
+using System;
 using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 namespace Polybrush
 {
@@ -15,6 +18,7 @@ namespace Polybrush
 		private double lastBrushApplication = 0.0;
 
 		private z_LocalPref<bool> hitSurfaceIsParent;
+		private z_LocalPref<int> density;
 		private z_LocalPref<bool> avoidOverlappingGameObjects;
 		private z_LocalPref<int> previewThumbSize;
 
@@ -62,6 +66,7 @@ namespace Polybrush
 		private GUIStyle paletteStyle;
 
 		static GUIContent gc_usePrefabPivot = new GUIContent("Use Pivot", "By default Polybrush will position placed objects entirely on top of the target plane.  When 'Use Pivot' is enabled objects will instead be placed by their assigned mesh origin.");
+		static GUIContent gc_density = new GUIContent("Density", "How many prefabs to place per second.");
 		static GUIContent gc_hitSurfaceIsParent = new GUIContent("Hit Surface is Parent", "When enabled any instantiated prefab from this mode will be automatically made a child of the surface it was placed on.");
 		static GUIContent gc_avoidOverlappingGameObjects = new GUIContent("Avoid Overlap", "If enabled Polybrush will attempt to avoid placing prefabs where they may overlap with another placed GameObject.");
 
@@ -95,6 +100,7 @@ namespace Polybrush
 			paletteStyle.padding = new RectOffset(8, 8, 8, 8);
 
 			hitSurfaceIsParent = new z_LocalPref<bool>("prefab_hitSurfaceIsParent", true);
+			density = new z_LocalPref<int>("prefab_density", 30);
 			avoidOverlappingGameObjects = new z_LocalPref<bool>("prefab_avoidOverlappingGameObjects");
 			previewThumbSize = new z_LocalPref<int>("prefab_previewThumbSize", 64);
 		}
@@ -119,6 +125,7 @@ namespace Polybrush
 
 			z_GlobalSettingsEditor.lockBrushToFirst = z_GUILayout.Toggle(z_GlobalSettingsEditor.gc_lockBrushToFirst, z_GlobalSettingsEditor.lockBrushToFirst);
 
+			density.prefValue = z_GUILayout.IntSlider(gc_density, density, 1, 500);
 			hitSurfaceIsParent.prefValue = z_GUILayout.Toggle(gc_hitSurfaceIsParent, hitSurfaceIsParent);
 			avoidOverlappingGameObjects.prefValue = z_GUILayout.Toggle(gc_avoidOverlappingGameObjects, avoidOverlappingGameObjects);
 
@@ -199,6 +206,7 @@ namespace Polybrush
 		public override void OnBrushBeginApply(z_BrushTarget target, z_BrushSettings settings)
 		{
 			base.OnBrushBeginApply(target, settings);
+			lastBrushApplication = EditorApplication.timeSinceStartup;
 			instances = z_SceneUtility.FindInstancesInScene(prefabPalette.prefabs.Select(x => x.gameObject), FormatInstanceName).ToList();
 		}
 
@@ -207,21 +215,28 @@ namespace Polybrush
 		{
 			bool shift = Event.current.shift && Event.current.type != EventType.ScrollWheel;
 
-			if( (EditorApplication.timeSinceStartup - lastBrushApplication) > Mathf.Max(.06f, (1f - settings.strength)) )
+			double delta = EditorApplication.timeSinceStartup - lastBrushApplication;
+			int count = (int)Math.Round((delta / 1.0d) * density.prefValue);
+			
+			if (count > 0)
 			{
+				//Debug.Log($"Should be placing {count} instances because delta time is {delta}.");
 				lastBrushApplication = EditorApplication.timeSinceStartup;
-
-				if(shift)
+				for (int i = 0; i < count; i++)
 				{
-					foreach(z_RaycastHit hit in target.raycastHits)
-						RemoveGameObjects(hit, target, settings);
-				}
-				else
-				{
-					foreach(z_RaycastHit hit in target.raycastHits)
-						PlaceGameObject(hit, GetPrefab().gameObject, target, settings);
+					if(shift)
+					{
+						foreach(z_RaycastHit hit in target.raycastHits)
+							RemoveGameObjects(hit, target, settings);
+					}
+					else
+					{
+						foreach(z_RaycastHit hit in target.raycastHits)
+							PlaceGameObject(hit, GetPrefab().gameObject, target, settings);
+					}
 				}
 			}
+			
 		}
 
 		// Handle Undo locally since it doesn't follow the same pattern as mesh modifications.
