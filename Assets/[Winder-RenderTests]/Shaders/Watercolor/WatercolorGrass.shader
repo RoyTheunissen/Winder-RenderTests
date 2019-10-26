@@ -3,7 +3,7 @@
     Properties
     {
         _Color ("Color", Color) = (1,1,1,1)
-        _MainTex ("Albedo (RGB)", 2D) = "white" {}
+        _ColorBG ("Color BG", Color) = (1,1,1,1)
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
         _Cutoff ("Alpha cutoff", Range(0,1)) = 0.5
@@ -11,6 +11,7 @@
         
         [HDR]
         _EmissionColor ("Emission", Color) = (0,0,0,1)
+        _EmissionColorBG ("Emission BG", Color) = (0,0,0,1)
     }
     SubShader
     {
@@ -27,11 +28,8 @@
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
 
-        sampler2D _MainTex;
-
         struct Input
         {
-            float2 uv_MainTex;
             float3 viewDir;
             float3 worldPos;
             float4 screenPos;
@@ -41,8 +39,10 @@
         half _Glossiness;
         half _Metallic;
         fixed4 _Color;
+        fixed4 _ColorBG;
         
         float4 _EmissionColor;
+        float4 _EmissionColorBG;
 
         // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
@@ -63,7 +63,8 @@
             NoisifyNormals(IN.screenPos, o);
         
             // Albedo comes from a texture tinted by color
-            fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+            float bg = IN.worldPos.z / 10;
+            fixed4 c = lerp(_Color, _ColorBG, bg);
             o.Albedo = c.rgb;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
@@ -72,7 +73,7 @@
             
             float darknessFactor = GetDarknessFactor(IN.worldPos, -1.0, 0.5);
             float darknessEmissionPenalty = darknessFactor * (1 - _NearLightFactor) * -1;
-            o.Emission = darknessEmissionPenalty + _EmissionColor * IN.vertexColor;
+            o.Emission = darknessEmissionPenalty + lerp(_EmissionColor, _EmissionColorBG, bg) * IN.vertexColor;
         }
         ENDCG
     }
