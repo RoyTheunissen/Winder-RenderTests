@@ -41,12 +41,21 @@ float2 GetScreenAlignedUv(float4 screenPos, float repeat = 1, float parallax = 0
     return GetScreenAlignedUv(screenUv, repeat, parallax);
 }
 
-void NoisifyNormals(float4 screenPos, inout SurfaceOutputStandard o)
+float2 GetWorldAlignedUvStepped(float3 worldPos)
 {
-    float2 uv = GetScreenAlignedUv(screenPos, 2);
+    float2 uv = float2(worldPos.x, worldPos.y) / 2;
+    float steps = 10;
+    uv.x += 3538;
+    //uv.x += 238 * floor(worldPos.z / steps);
+    return uv;
+}
+
+void NoisifyNormals(float4 screenPos, inout SurfaceOutputStandard o, float density = 2, float magnitude = 0.175)
+{
+    float2 uv = GetScreenAlignedUv(screenPos, density);
     fixed3 perlin = tex2D (_PerlinTex, uv);
     
-    o.Normal += float3(perlin.yz, 0) * .175;
+    o.Normal += float3(perlin.yz, 0) * magnitude;
 }
 
 float DarkenNearZero(float3 worldPos)

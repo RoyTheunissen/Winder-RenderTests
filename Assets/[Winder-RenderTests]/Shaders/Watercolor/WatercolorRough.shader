@@ -160,7 +160,7 @@ Shader "Watercolor/Rough"
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
             o.Alpha = c.a * flaking;
-            o.Emission = DarkenNearZero(IN.worldPos);
+            o.Emission = DarkenNearZero(IN.worldPos) + _EmissionColor;
         }
         ENDCG
     }

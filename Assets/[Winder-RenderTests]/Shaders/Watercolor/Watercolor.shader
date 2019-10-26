@@ -89,7 +89,7 @@
             float rimPower = 3.2;
             
             //o.Emission = lerp(min(0, (IN.worldPos.z - 10 + 1.5) / 10) * 1, 0, _NearLightFactor);
-            o.Emission = DarkenNearZero(IN.worldPos);
+            o.Emission = DarkenNearZero(IN.worldPos) + _EmissionColor;
             
             // Moving paper texture to post effect
             //o.Emission += (1 - paper.r) * .5;

@@ -1,4 +1,4 @@
-﻿Shader "Watercolor/Cutout Double-sided"
+﻿Shader "Watercolor/Cutout (Double-sided)"
 {
     Properties
     {
@@ -10,8 +10,6 @@
         
         [HDR]
         _EmissionColor ("Emission", Color) = (0,0,0,1)
-        
-        _NearLightFactor ("Near Light Factor", Range(0,1)) = 1.0
     }
     SubShader
     {
@@ -20,11 +18,11 @@
         Cull Off
 
         CGPROGRAM
-        #include "Watercolor.cginc"
-        
         // Physically based Standard lighting model, and enable shadows on all light types
         #pragma surface surf WaterColor fullforwardshadows alphatest:_Cutoff
 
+        #include "Watercolor.cginc"
+        
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
 
@@ -34,8 +32,8 @@
         {
             float2 uv_MainTex;
             float3 viewDir;
-            float4 screenPos;
             float3 worldPos;
+            float4 screenPos;
         };
 
         half _Glossiness;
@@ -54,16 +52,16 @@
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
             NoisifyNormals(IN.screenPos, o);
-            
+        
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
             o.Albedo = c.rgb;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
-            o.Alpha = c.a * 0;
+            o.Alpha = c.a;
             
-            o.Emission = _EmissionColor;
+            o.Emission = DarkenNearZero(IN.worldPos) + _EmissionColor;
         }
         ENDCG
     }
