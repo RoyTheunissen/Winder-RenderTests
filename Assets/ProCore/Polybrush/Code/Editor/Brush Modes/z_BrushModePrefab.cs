@@ -20,6 +20,8 @@ namespace Polybrush
 		private z_LocalPref<bool> alignToHitSurface;
 		private z_LocalPref<bool> hitSurfaceIsParent;
 		private z_LocalPref<int> density;
+		private z_LocalPref<float> scaleMin;
+		private z_LocalPref<float> scaleMax;
 		private z_LocalPref<bool> avoidOverlappingGameObjects;
 		private z_LocalPref<int> previewThumbSize;
 
@@ -68,6 +70,8 @@ namespace Polybrush
 
 		static GUIContent gc_usePrefabPivot = new GUIContent("Use Pivot", "By default Polybrush will position placed objects entirely on top of the target plane.  When 'Use Pivot' is enabled objects will instead be placed by their assigned mesh origin.");
 		static GUIContent gc_density = new GUIContent("Density", "How many prefabs to place per second.");
+		static GUIContent gc_scaleMin = new GUIContent("Scale Min", "Minimum scale.");
+		static GUIContent gc_scaleMax = new GUIContent("Scale Max", "Maximum scale.");
 		static GUIContent gc_alignToHitSurface = new GUIContent("Align To Hit Surface", "When enabled any instantiated prefab will be aligned to the surface's normal.");
 		static GUIContent gc_hitSurfaceIsParent = new GUIContent("Hit Surface is Parent", "When enabled any instantiated prefab from this mode will be automatically made a child of the surface it was placed on.");
 		static GUIContent gc_avoidOverlappingGameObjects = new GUIContent("Avoid Overlap", "If enabled Polybrush will attempt to avoid placing prefabs where they may overlap with another placed GameObject.");
@@ -104,6 +108,8 @@ namespace Polybrush
 			alignToHitSurface = new z_LocalPref<bool>("prefab_alignToHitSurface", true);
 			hitSurfaceIsParent = new z_LocalPref<bool>("prefab_hitSurfaceIsParent", true);
 			density = new z_LocalPref<int>("prefab_density", 30);
+			scaleMin = new z_LocalPref<float>("prefab_scaleMin", 1.0f);
+			scaleMax = new z_LocalPref<float>("prefab_scaleMax", 1.0f);
 			avoidOverlappingGameObjects = new z_LocalPref<bool>("prefab_avoidOverlappingGameObjects");
 			previewThumbSize = new z_LocalPref<int>("prefab_previewThumbSize", 64);
 		}
@@ -129,6 +135,8 @@ namespace Polybrush
 			z_GlobalSettingsEditor.lockBrushToFirst = z_GUILayout.Toggle(z_GlobalSettingsEditor.gc_lockBrushToFirst, z_GlobalSettingsEditor.lockBrushToFirst);
 
 			density.prefValue = z_GUILayout.IntSlider(gc_density, density, 1, 500);
+			scaleMin.prefValue = z_GUILayout.FloatField(gc_scaleMin, scaleMin);
+			scaleMax.prefValue = z_GUILayout.FloatField(gc_scaleMax, scaleMax);
 			alignToHitSurface.prefValue = z_GUILayout.Toggle(gc_alignToHitSurface, alignToHitSurface);
 			hitSurfaceIsParent.prefValue = z_GUILayout.Toggle(gc_hitSurfaceIsParent, hitSurfaceIsParent);
 			avoidOverlappingGameObjects.prefValue = z_GUILayout.Toggle(gc_avoidOverlappingGameObjects, avoidOverlappingGameObjects);
@@ -272,6 +280,8 @@ namespace Polybrush
 
 				inst.transform.localPosition = target.transform.TransformPoint(rand_hit.position);
 				inst.transform.localRotation = rotation * random;
+				inst.transform.localScale = Vector3.one * Random.Range(
+					                            scaleMin.prefValue, scaleMax.prefValue);
 				inst.name = FormatInstanceName(prefab);
 				inst.transform.position = inst.transform.position + inst.transform.up * pivotOffset;
 
