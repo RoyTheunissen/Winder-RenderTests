@@ -17,6 +17,7 @@ namespace Polybrush
 		const string PREFAB_PALETTE_PATH = "Prefab Palettes/Default.asset";
 		private double lastBrushApplication = 0.0;
 
+		private z_LocalPref<bool> alignToHitSurface;
 		private z_LocalPref<bool> hitSurfaceIsParent;
 		private z_LocalPref<int> density;
 		private z_LocalPref<bool> avoidOverlappingGameObjects;
@@ -67,6 +68,7 @@ namespace Polybrush
 
 		static GUIContent gc_usePrefabPivot = new GUIContent("Use Pivot", "By default Polybrush will position placed objects entirely on top of the target plane.  When 'Use Pivot' is enabled objects will instead be placed by their assigned mesh origin.");
 		static GUIContent gc_density = new GUIContent("Density", "How many prefabs to place per second.");
+		static GUIContent gc_alignToHitSurface = new GUIContent("Align To Hit Surface", "When enabled any instantiated prefab will be aligned to the surface's normal.");
 		static GUIContent gc_hitSurfaceIsParent = new GUIContent("Hit Surface is Parent", "When enabled any instantiated prefab from this mode will be automatically made a child of the surface it was placed on.");
 		static GUIContent gc_avoidOverlappingGameObjects = new GUIContent("Avoid Overlap", "If enabled Polybrush will attempt to avoid placing prefabs where they may overlap with another placed GameObject.");
 
@@ -99,6 +101,7 @@ namespace Polybrush
 			paletteStyle = new GUIStyle();
 			paletteStyle.padding = new RectOffset(8, 8, 8, 8);
 
+			alignToHitSurface = new z_LocalPref<bool>("prefab_alignToHitSurface", true);
 			hitSurfaceIsParent = new z_LocalPref<bool>("prefab_hitSurfaceIsParent", true);
 			density = new z_LocalPref<int>("prefab_density", 30);
 			avoidOverlappingGameObjects = new z_LocalPref<bool>("prefab_avoidOverlappingGameObjects");
@@ -126,6 +129,7 @@ namespace Polybrush
 			z_GlobalSettingsEditor.lockBrushToFirst = z_GUILayout.Toggle(z_GlobalSettingsEditor.gc_lockBrushToFirst, z_GlobalSettingsEditor.lockBrushToFirst);
 
 			density.prefValue = z_GUILayout.IntSlider(gc_density, density, 1, 500);
+			alignToHitSurface.prefValue = z_GUILayout.Toggle(gc_alignToHitSurface, alignToHitSurface);
 			hitSurfaceIsParent.prefValue = z_GUILayout.Toggle(gc_hitSurfaceIsParent, hitSurfaceIsParent);
 			avoidOverlappingGameObjects.prefValue = z_GUILayout.Toggle(gc_avoidOverlappingGameObjects, avoidOverlappingGameObjects);
 
@@ -258,7 +262,10 @@ namespace Polybrush
 			{
 				float pivotOffset = placeWithPivot ? 0f : GetPivotOffset(prefab);
 
-				Quaternion rotation = Quaternion.FromToRotation(Vector3.up, target.transform.TransformDirection(rand_hit.normal));
+				Quaternion rotation = alignToHitSurface
+					? Quaternion.FromToRotation(
+						Vector3.up, target.transform.TransformDirection(rand_hit.normal))
+					: Quaternion.identity;
 				Quaternion random = Quaternion.AngleAxis(Random.Range(0f, 360f), Vector3.up);
 
 				GameObject inst = PrefabUtility.ConnectGameObjectToPrefab(Instantiate(prefab), prefab);
