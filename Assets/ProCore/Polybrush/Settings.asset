@@ -19,16 +19,21 @@ MonoBehaviour:
   - z_pref_lockBrushSettings
   - z_pref_additionalVertexStreams
   - z_pref_hideWireframe
+  - prefab_alignToHitSurface
   m_int_keys:
   - z_GIWorkflowMode
   - prefab_density
-  m_float_keys: []
+  m_float_keys:
+  - prefab_scaleMin
+  - prefab_scaleMax
   m_string_keys: []
   m_Color_keys:
   - z_pref_brushColor
-  m_bool_values: 010101000101
-  m_int_values: 0100000096000000
-  m_float_values: []
+  m_bool_values: 01010100010100
+  m_int_values: 0100000002000000
+  m_float_values:
+  - 0.75
+  - 1.25
   m_string_values: []
   m_Color_values:
   - {r: 0, g: 0.8, b: 1, a: 1}

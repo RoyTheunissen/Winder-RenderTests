@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc38003c0e0db6641a4762d4f392de52, type: 3}
+  m_Name: Trees (Elm)
+  m_EditorClassIdentifier: 
+  prefabs:
+  - gameObject: {fileID: 2830782859154318583, guid: ef0c2e2280242e44d8393265f2639613,
+      type: 3}
+    settings:
+      rotationRange: {x: 0, y: 0}
+      scaleRange: {x: 0, y: 0}
+  - gameObject: {fileID: 7870527209676489953, guid: 511866a9de8351e4394ea1d1f8c10b7a,
+      type: 3}
+    settings:
+      rotationRange: {x: 0, y: 0}
+      scaleRange: {x: 0, y: 0}
+  - gameObject: {fileID: 8716570844371442264, guid: e7dc03790e96f5440a5473ac89211bb3,
+      type: 3}
+    settings:
+      rotationRange: {x: 0, y: 0}
+      scaleRange: {x: 0, y: 0}
+  - gameObject: {fileID: 5460035339893200628, guid: abdae8445fdb815438771e3beefac3a5,
+      type: 3}
+    settings:
+      rotationRange: {x: 0, y: 0}
+      scaleRange: {x: 0, y: 0}
