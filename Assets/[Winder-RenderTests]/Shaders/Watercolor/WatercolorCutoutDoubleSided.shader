@@ -17,6 +17,53 @@
         Tags {"Queue"="AlphaTest" "IgnoreProjector"="True" "RenderType"="TransparentCutout"}
         LOD 200
         Cull Off
+        
+        // Pass to render object as a shadow caster
+        Pass {
+            Name "Caster"
+            Tags { "LightMode" = "ShadowCaster" }
+                
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma target 2.0
+            #pragma multi_compile_shadowcaster
+            #include "UnityCG.cginc"
+            #include "Watercolor.cginc"
+            
+            struct v2f { 
+                V2F_SHADOW_CASTER;
+                float2 uv : TEXCOORD1;
+                float3 normal : NORMAL;
+            };
+            
+            uniform float4 _MainTex_ST;
+            
+            v2f vert( appdata_base v )
+            {
+                v2f o;
+                TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)
+                o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+                o.normal = v.normal;
+                
+                return o;
+            }
+            
+            uniform sampler2D _MainTex;
+            uniform fixed _Cutoff;
+            uniform fixed4 _Color;
+            
+            float4 frag( v2f i ) : SV_Target
+            {
+                fixed4 texcol = tex2D( _MainTex, i.uv );
+                
+                clip( texcol.a*_Color.a - _Cutoff );
+                
+                SHADOW_CASTER_FRAGMENT(i)
+            }
+            ENDCG
+        
+        }
 
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
