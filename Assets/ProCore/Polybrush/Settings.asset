@@ -20,6 +20,7 @@ MonoBehaviour:
   - z_pref_additionalVertexStreams
   - z_pref_hideWireframe
   - prefab_alignToHitSurface
+  - prefab_avoidOverlappingGameObjects
   m_int_keys:
   - z_GIWorkflowMode
   - prefab_density
@@ -29,7 +30,7 @@ MonoBehaviour:
   m_string_keys: []
   m_Color_keys:
   - z_pref_brushColor
-  m_bool_values: 01010100010100
+  m_bool_values: 0101010001010000
   m_int_values: 0100000002000000
   m_float_values:
   - 0.75
