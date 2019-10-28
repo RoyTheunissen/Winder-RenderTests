@@ -16,6 +16,12 @@ namespace Polybrush
 		private void OnEnable()
 		{
 			prefabs = serializedObject.FindProperty("prefabs");
+			
+			selected.Clear();
+			for (int i = 0; i < prefabs.arraySize; i++)
+			{
+				selected.Add(i);
+			}
 		}
 
 		public static z_PrefabPalette AddNew()
