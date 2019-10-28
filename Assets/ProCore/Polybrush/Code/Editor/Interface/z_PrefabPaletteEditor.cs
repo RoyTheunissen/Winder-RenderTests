@@ -104,6 +104,18 @@ namespace Polybrush
 					GUI.Label(border, "Drag Prefabs Here!", EditorStyles.centeredGreyMiniLabel);
 			}
 
+			// When CTRL+A is pressed, select all prefabs.
+			if (Event.current.type == EventType.KeyUp && Event.current.control &&
+			    Event.current.keyCode == KeyCode.A)
+			{
+				selected.Clear();
+				for (int i = 0; i < count; i++)
+				{
+					selected.Add(i);
+				}
+				Event.current.Use();
+			}
+
 			for(int i = 0; i < count; i++)
 			{
 				SerializedProperty it = prefabs.GetArrayElementAtIndex(i);
