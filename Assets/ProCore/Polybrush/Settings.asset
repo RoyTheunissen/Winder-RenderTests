@@ -27,7 +27,8 @@ MonoBehaviour:
   m_float_keys:
   - prefab_scaleMin
   - prefab_scaleMax
-  m_string_keys: []
+  m_string_keys:
+  - prefab_placeInContainerWithName
   m_Color_keys:
   - z_pref_brushColor
   m_bool_values: 0101010001010000
@@ -35,6 +36,7 @@ MonoBehaviour:
   m_float_values:
   - 0.75
   - 1.25
-  m_string_values: []
+  m_string_values:
+  - Grass
   m_Color_values:
   - {r: 0, g: 0.8, b: 1, a: 1}

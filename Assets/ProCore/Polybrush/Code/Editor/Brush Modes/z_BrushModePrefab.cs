@@ -19,6 +19,7 @@ namespace Polybrush
 
 		private z_LocalPref<bool> alignToHitSurface;
 		private z_LocalPref<bool> hitSurfaceIsParent;
+		private z_LocalPref<string> placeInContainerWithName;
 		private z_LocalPref<int> density;
 		private z_LocalPref<float> scaleMin;
 		private z_LocalPref<float> scaleMax;
@@ -74,6 +75,7 @@ namespace Polybrush
 		static GUIContent gc_scaleMax = new GUIContent("Scale Max", "Maximum scale.");
 		static GUIContent gc_alignToHitSurface = new GUIContent("Align To Hit Surface", "When enabled any instantiated prefab will be aligned to the surface's normal.");
 		static GUIContent gc_hitSurfaceIsParent = new GUIContent("Hit Surface is Parent", "When enabled any instantiated prefab from this mode will be automatically made a child of the surface it was placed on.");
+		static GUIContent gc_placeInContainerWithName = new GUIContent("Place In Container With Name", "When enabled any instantiated prefab from this mode will be assigned to a named container.");
 		static GUIContent gc_avoidOverlappingGameObjects = new GUIContent("Avoid Overlap", "If enabled Polybrush will attempt to avoid placing prefabs where they may overlap with another placed GameObject.");
 
 		static string FormatInstanceName(GameObject go)
@@ -107,6 +109,7 @@ namespace Polybrush
 
 			alignToHitSurface = new z_LocalPref<bool>("prefab_alignToHitSurface", true);
 			hitSurfaceIsParent = new z_LocalPref<bool>("prefab_hitSurfaceIsParent", true);
+			placeInContainerWithName = new z_LocalPref<string>("prefab_placeInContainerWithName", "");
 			density = new z_LocalPref<int>("prefab_density", 30);
 			scaleMin = new z_LocalPref<float>("prefab_scaleMin", 1.0f);
 			scaleMax = new z_LocalPref<float>("prefab_scaleMax", 1.0f);
@@ -139,6 +142,7 @@ namespace Polybrush
 			scaleMax.prefValue = z_GUILayout.FloatField(gc_scaleMax, scaleMax);
 			alignToHitSurface.prefValue = z_GUILayout.Toggle(gc_alignToHitSurface, alignToHitSurface);
 			hitSurfaceIsParent.prefValue = z_GUILayout.Toggle(gc_hitSurfaceIsParent, hitSurfaceIsParent);
+			placeInContainerWithName.prefValue = z_GUILayout.TextField(gc_placeInContainerWithName, placeInContainerWithName);
 			avoidOverlappingGameObjects.prefValue = z_GUILayout.Toggle(gc_avoidOverlappingGameObjects, avoidOverlappingGameObjects);
 
 			GUILayout.Space(4);
@@ -291,8 +295,20 @@ namespace Polybrush
 					return;
 				}
 
-				if( hitSurfaceIsParent )
-					inst.transform.SetParent(target.transform);
+				// Find an appropriate parent.
+				Transform parent = null;
+				if (hitSurfaceIsParent)
+					parent = target.transform;
+				if (!string.IsNullOrEmpty(placeInContainerWithName))
+				{
+					if (!hitSurfaceIsParent || parent == null)
+						parent = parent.FindOrCreateRoot(placeInContainerWithName);
+					else
+						parent = parent.FindOrCreateChild(placeInContainerWithName);
+				}
+				
+				if( parent != null )
+					inst.transform.SetParent(parent);
 
 				PrefabUtility.RecordPrefabInstancePropertyModifications(inst);
 

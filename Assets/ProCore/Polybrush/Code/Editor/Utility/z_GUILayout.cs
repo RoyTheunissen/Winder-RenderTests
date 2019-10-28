@@ -360,6 +360,19 @@ namespace Polybrush
 			return ret;
 		}
 		
+		public static string TextField(GUIContent gc, string value, params GUILayoutOption[] options)
+		{
+			GUILayout.BeginHorizontal();
+
+			GUILayout.Label(gc);
+			GUILayout.FlexibleSpace();
+			string ret = EditorGUILayout.TextField(GUIContent.none, value, GUILayout.MaxWidth(EditorGUIUtility.currentViewWidth / 2));
+
+			GUILayout.EndHorizontal();
+
+			return ret;
+		}
+		
 		public static int IntSlider(GUIContent gc, int value, int min, int max, params GUILayoutOption[] options)
 		{
 			GUILayout.BeginHorizontal();

@@ -32,6 +32,8 @@ namespace Polybrush
 						z_Pref.SetFloat(key, (float) ((object) _value));
 					else if( typeof(T) == typeof(Gradient) )
 						z_Pref.SetGradient(key, (Gradient) ((object) _value));
+					else if( typeof(T) == typeof(string) )
+						z_Pref.SetString(key, (string) ((object) _value));
 				}
 			}
 		}
@@ -52,6 +54,8 @@ namespace Polybrush
 				this._value = (T)((object)z_Pref.GetFloat(key, (float) (object) initialValueIfNoKey));
 			else if( typeof(T) == typeof(Gradient) )
 				this._value = (T)((object)z_Pref.GetGradient(key));
+			else if( typeof(T) == typeof(string) )
+				this._value = (T)((object)z_Pref.GetString(key));
 			else
 				this._value = default(T);
 		}

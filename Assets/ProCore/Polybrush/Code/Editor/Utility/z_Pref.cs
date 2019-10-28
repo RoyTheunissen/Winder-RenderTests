@@ -193,5 +193,15 @@ namespace Polybrush
 		{
 			preferences.SetString(key, z_GradientSerializer.Serialize(gradient));
 		}
+		
+		public static string GetString(string key)
+		{
+			return preferences.GetString(key, "");
+		}
+		
+		public static void SetString(string key, string value)
+		{
+			preferences.SetString(key, value ?? "");
+		}
 	}
 }
