@@ -37,6 +37,6 @@ MonoBehaviour:
   - 0.75
   - 1.25
   m_string_values:
-  - Grass
+  - 
   m_Color_values:
   - {r: 0, g: 0.8, b: 1, a: 1}
