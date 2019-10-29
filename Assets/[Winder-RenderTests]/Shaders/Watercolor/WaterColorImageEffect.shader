@@ -64,7 +64,7 @@
                 
                 fixed3 paper = tex2D (_PaperTex, uv);
                 
-                col.rgb += (1 - paper.r) * 0.4 * (1 - hsv.b * .5);
+                col.rgb += (1 - paper.r) * 0.4 * (1 - min(1, hsv.b) * .5);
                 
                 //col.rgb *= tex2D (_ValueRampTex, float2(value, 0.5));
                 
