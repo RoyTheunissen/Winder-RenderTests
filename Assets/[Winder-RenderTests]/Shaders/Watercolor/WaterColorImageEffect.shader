@@ -43,6 +43,11 @@
             sampler2D _MainTex;
             sampler2D _ValueRampTex;
             sampler2D _PaperTex;
+            
+            float push(float v)
+            {
+                return max(0, .5 + (v - .5) * 2.0);
+            }
 
             fixed4 frag (v2f i) : SV_Target
             {
@@ -52,11 +57,10 @@
                 //col.rgb = 1 - col.rgb;
                 
                 float3 hsv = rgb2hsv(col.rgb);
-                //hsv.b = valueRamp(hsv.b);
-                //hsv.b = saturate(hsv.b * 1);
-                hsv.b = max(hsv.b, 0);
-                hsv.b = .5 + (hsv.b - .5) * 2.0;
-                col = fixed4(hsv2rgb(hsv), col.a);
+                //hsv.b = max(hsv.b, 0);
+                //hsv.b = .5 + (hsv.b - .5) * 2.0;
+                //col = fixed4(hsv2rgb(hsv), col.a);
+                col = fixed4(push(col.r), push(col.g), push(col.b), col.a);
                 
                 //col *= 1.5;
                 
@@ -64,7 +68,7 @@
                 
                 fixed3 paper = tex2D (_PaperTex, uv);
                 
-                col.rgb += (1 - paper.r) * 0.4 * (1 - min(1, hsv.b) * .5);
+                col.rgb += (1 - paper.r) * 0.4 * (1 - saturate(hsv.b) * .5);
                 
                 //col.rgb *= tex2D (_ValueRampTex, float2(value, 0.5));
                 
