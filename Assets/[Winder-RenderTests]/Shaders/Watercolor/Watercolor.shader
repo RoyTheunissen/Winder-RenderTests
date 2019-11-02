@@ -10,6 +10,8 @@
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
         _SelectionFactor ("Selection Factor", Range(0.0, 1.0)) = 0.0
+        _WindingFactor ("Winding Factor", Range(0.0, 1.0)) = 0.0
+        _WindingDirection ("Winding Direction", Range(-1.0, 1.0)) = 0.0
         _HighlightMultiplier ("Highlight Multiplier", Range(1.0, 24.0)) = 1.0
         _NearLightFactor ("Near Light Factor", Range(0,1)) = 1.0
     }
@@ -19,7 +21,8 @@
         LOD 200
 
         CGPROGRAM
-        #include "Watercolor.cginc"
+        
+        #include "..\Winder.cginc"
         
         // Physically based Standard lighting model, and enable shadows on all light types
         #pragma surface surf WaterColor fullforwardshadows vertex:vert
@@ -50,9 +53,11 @@
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
         // #pragma instancing_options assumeuniformscaling
         UNITY_INSTANCING_BUFFER_START(Props)
-            UNITY_DEFINE_INSTANCED_PROP(float, _SelectionFactor)
+            WINDING_FIELDS_INSTANCED
             UNITY_DEFINE_INSTANCED_PROP(float4, _HighlightColor)
         UNITY_INSTANCING_BUFFER_END(Props)
+        
+        #include "Watercolor.cginc"
         
         void vert (inout appdata_full v, out Input o)
         {
@@ -82,14 +87,16 @@
             float threshold = .5;
             float rimLight = saturate((nDotL - threshold) * 10 + threshold) * mask;
             
-            float4 highlightColor = UNITY_ACCESS_INSTANCED_PROP(Props, _HighlightColor);
+            //float4 highlightColor = UNITY_ACCESS_INSTANCED_PROP(Props, _HighlightColor);
             
             float selectionFactor = UNITY_ACCESS_INSTANCED_PROP(Props, _SelectionFactor) * mask;
             
             float rimPower = 3.2;
             
+            float3 winding = 0;//selectionFactor * float3(.25, .75, 1) * 2;
+            
             //o.Emission = lerp(min(0, (IN.worldPos.z - 10 + 1.5) / 10) * 1, 0, _NearLightFactor);
-            o.Emission = DarkenNearZero(IN.worldPos) + _EmissionColor;
+            o.Emission = DarkenNearZero(IN.worldPos) + _EmissionColor + winding;
             
             // Moving paper texture to post effect
             //o.Emission += (1 - paper.r) * .5;

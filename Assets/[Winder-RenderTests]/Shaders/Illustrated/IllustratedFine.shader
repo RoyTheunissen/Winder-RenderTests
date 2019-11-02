@@ -115,7 +115,7 @@
             float threshold = .5;
             float rimLight = saturate((nDotL - threshold) * 10 + threshold) * mask;
             
-            float4 highlightColor = UNITY_ACCESS_INSTANCED_PROP(Props, _HighlightColor);
+            float4 highlightColor = 0;//UNITY_ACCESS_INSTANCED_PROP(Props, _HighlightColor);
             
             float selectionFactor = UNITY_ACCESS_INSTANCED_PROP(Props, _SelectionFactor) * mask;
             

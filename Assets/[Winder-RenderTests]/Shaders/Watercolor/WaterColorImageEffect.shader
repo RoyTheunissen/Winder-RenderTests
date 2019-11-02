@@ -17,8 +17,9 @@
             #pragma vertex vert
             #pragma fragment frag
 
+            #include "..\Winder.cginc"
+
             #include "UnityCG.cginc"
-            #include "Watercolor.cginc"
 
             struct appdata
             {
@@ -39,6 +40,10 @@
                 o.uv = v.uv;
                 return o;
             }
+            
+            WINDING_FIELDS
+            
+            #include "Watercolor.cginc"
 
             sampler2D _MainTex;
             sampler2D _ValueRampTex;

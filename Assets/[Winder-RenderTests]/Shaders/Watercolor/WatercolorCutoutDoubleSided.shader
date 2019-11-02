@@ -28,8 +28,8 @@
             #pragma fragment frag
             #pragma target 2.0
             #pragma multi_compile_shadowcaster
+            #include "..\Winder.cginc"
             #include "UnityCG.cginc"
-            #include "Watercolor.cginc"
             
             struct v2f { 
                 V2F_SHADOW_CASTER;
@@ -53,6 +53,10 @@
             uniform fixed _Cutoff;
             uniform fixed4 _Color;
             
+            WINDING_FIELDS
+            
+            #include "Watercolor.cginc"
+            
             float4 frag( v2f i ) : SV_Target
             {
                 fixed4 texcol = tex2D( _MainTex, i.uv );
@@ -68,8 +72,8 @@
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
         #pragma surface surf WaterColor fullforwardshadows alphatest:_Cutoff
-
-        #include "Watercolor.cginc"
+        
+        #include "..\Winder.cginc"
         
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
@@ -94,8 +98,10 @@
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
         // #pragma instancing_options assumeuniformscaling
         UNITY_INSTANCING_BUFFER_START(Props)
-            //UNITY_DEFINE_INSTANCED_PROP(float, _SelectionFactor)
+            WINDING_FIELDS_INSTANCED
         UNITY_INSTANCING_BUFFER_END(Props)
+
+        #include "Watercolor.cginc"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {

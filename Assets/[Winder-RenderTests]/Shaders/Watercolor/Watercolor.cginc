@@ -1,26 +1,18 @@
 #include "UnityPBSLighting.cginc"
 
+#ifndef WINDER_INC
+#include "../Winder.cginc"
+#endif
+
 sampler2D _LightRampTex;
 sampler2D _PerlinTex;
 
+float3 _WindingColorSelection;
+float3 _WindingColorPositive;
+float3 _WindingColorNegative;
+float3 _WindingColorNeutral;
+
 float _NearLightFactor;
-
-float3 rgb2hsv(float3 c) {
-  float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
-  float4 p = lerp(float4(c.bg, K.wz), float4(c.gb, K.xy), step(c.b, c.g));
-  float4 q = lerp(float4(p.xyw, c.r), float4(c.r, p.yzx), step(p.x, c.r));
-
-  float d = q.x - min(q.w, q.y);
-  float e = 1.0e-10;
-  return float3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
-}
-
-float3 hsv2rgb(float3 c) {
-  c = float3(c.x, clamp(c.yz, 0.0, 1.0));
-  float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-  float3 p = abs(frac(c.xxx + K.xyz) * 6.0 - K.www);
-  return c.z * lerp(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-}
 
 float valueRamp(float value)
 {
@@ -210,7 +202,12 @@ half4 BRDF_WaterColor_PBS (half3 diffColor, half3 specColor, half oneMinusReflec
     
     half3 hsv = rgb2hsv(lighting.rgb);
     hsv.b = valueRamp(hsv.b);
-    lighting = hsv2rgb(hsv);
+    
+    float3 windingTint = lerp(_WindingColorNeutral, _WindingColorPositive, saturate(_WindingDirection));
+    windingTint = lerp(windingTint, _WindingColorNegative, saturate(- _WindingDirection));
+    float3 winding = lerp(lerp(1, _WindingColorSelection * 6.5, _SelectionFactor), windingTint * 9, _WindingFactor);
+    
+    lighting = hsv2rgb(hsv) * winding;
     
     //float nearFactor = lerp(1, _NearLightFactor, );
 

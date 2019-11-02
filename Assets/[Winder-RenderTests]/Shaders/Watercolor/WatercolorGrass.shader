@@ -30,7 +30,7 @@
             #pragma target 2.0
             #pragma multi_compile_shadowcaster
             #include "UnityCG.cginc"
-            #include "Watercolor.cginc"
+            #include "../Winder.cginc"
             
             struct v2f { 
                 V2F_SHADOW_CASTER;
@@ -39,6 +39,10 @@
             };
             
             uniform float4 _MainTex_ST;
+            
+            WINDING_FIELDS
+            
+            #include "Watercolor.cginc"
             
             v2f vert( appdata_base v )
             {
@@ -69,8 +73,8 @@
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
         #pragma surface surf WaterColor fullforwardshadows vertex:vert alphatest:_Cutoff
-
-        #include "Watercolor.cginc"
+        
+        #include "../Winder.cginc"
         
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
@@ -90,6 +94,8 @@
         
         float4 _EmissionColor;
         float4 _EmissionColorBG;
+        
+        WINDING_FIELDS
 
         // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
@@ -97,6 +103,8 @@
         UNITY_INSTANCING_BUFFER_START(Props)
             //UNITY_DEFINE_INSTANCED_PROP(float, _SelectionFactor)
         UNITY_INSTANCING_BUFFER_END(Props)
+
+        #include "Watercolor.cginc"
         
         void vert (inout appdata_full v, out Input o)
         {
@@ -124,5 +132,5 @@
         }
         ENDCG
     }
-    FallBack "Transparent/Cutout/Diffuse"
+    //FallBack "Transparent/Cutout/Diffuse"
 }

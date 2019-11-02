@@ -19,10 +19,10 @@
         LOD 200
 
         CGPROGRAM
-        #include "Watercolor.cginc"
-        
         // Physically based Standard lighting model, and enable shadows on all light types
         #pragma surface surf WaterColor fullforwardshadows vertex:vert
+        
+        #include "../Winder.cginc"
 
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
@@ -46,7 +46,10 @@
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
         // #pragma instancing_options assumeuniformscaling
         UNITY_INSTANCING_BUFFER_START(Props)
+            WINDING_FIELDS_INSTANCED
         UNITY_INSTANCING_BUFFER_END(Props)
+        
+        #include "Watercolor.cginc"
         
         void vert (inout appdata_full v, out Input o)
         {
