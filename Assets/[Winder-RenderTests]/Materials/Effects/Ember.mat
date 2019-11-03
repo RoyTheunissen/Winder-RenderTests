@@ -73,8 +73,11 @@ Material:
     - _ThresholdEnd: 0.5
     - _ThresholdStart: 0.5
     - _UVSec: 0
+    - _WindingDirection: 1
+    - _WindingEmission: 9
+    - _WindingFactor: 1
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 34.585827, g: 144.62215, b: 145.31857, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _ScrollSpeed: {r: 0, g: 0, b: 0, a: 0}

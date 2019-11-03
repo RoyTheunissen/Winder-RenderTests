@@ -38,7 +38,7 @@
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
         // #pragma instancing_options assumeuniformscaling
         UNITY_INSTANCING_BUFFER_START(Props)
-            UNITY_DEFINE_INSTANCED_PROP(float, _WindingEmission) \
+            UNITY_DEFINE_INSTANCED_PROP(float, _WindingEmission)
             WINDING_FIELDS_INSTANCED
         UNITY_INSTANCING_BUFFER_END(Props)
         

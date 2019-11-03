@@ -11,6 +11,11 @@
         
         [HDR]
         _EmissionColor ("Emission", Color) = (0,0,0,1)
+        
+        [Space]
+        _WindingFactor ("Winding Factor", Range(0.0, 1.0)) = 0.0
+        _WindingEmission ("Winding Emission", Range(0.0, 10.0)) = 9.0
+        _WindingDirection ("Winding Direction", Range(-1.0, 1.0)) = 1.0
     }
     SubShader
     {
@@ -29,6 +34,7 @@
             #pragma target 2.0
             #pragma multi_compile_shadowcaster
             #include "UnityCG.cginc"
+            #include "../Winder.cginc"
             
             struct v2f { 
                 V2F_SHADOW_CASTER;
@@ -40,6 +46,10 @@
             uniform float4 _MainTex_ST;
             
             float _Cutoff;
+            
+            WINDING_FIELDS
+            
+            #include "../Watercolor/Watercolor.cginc"
             
             v2f vert( appdata_full v )
             {
@@ -73,6 +83,8 @@
 
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
+        
+        #include "../Winder.cginc"
 
         sampler2D _MainTex;
 
@@ -93,8 +105,11 @@
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
         // #pragma instancing_options assumeuniformscaling
         UNITY_INSTANCING_BUFFER_START(Props)
-            //UNITY_DEFINE_INSTANCED_PROP(float, _SelectionFactor)
+            UNITY_DEFINE_INSTANCED_PROP(float, _WindingEmission)
+            WINDING_FIELDS_INSTANCED
         UNITY_INSTANCING_BUFFER_END(Props)
+        
+        #include "../Watercolor/Watercolor.cginc"
         
         void vert (inout appdata_full v, out Input o)
         {
