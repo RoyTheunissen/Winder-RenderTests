@@ -104,6 +104,12 @@ float3 GetGrassOffset(float l)
     return offset;
 }
 
+float3 GetWindingTint(float direction)
+{
+    float3 windingTint = lerp(_WindingColorNeutral, _WindingColorPositive, saturate(direction));
+    return lerp(windingTint, _WindingColorNegative, saturate(- direction));
+}
+
 // Main Physically Based BRDF
 // Derived from Disney work and based on Torrance-Sparrow micro-facet model
 //
@@ -203,11 +209,11 @@ half4 BRDF_WaterColor_PBS (half3 diffColor, half3 specColor, half oneMinusReflec
     half3 hsv = rgb2hsv(lighting.rgb);
     hsv.b = valueRamp(hsv.b);
     
-    float3 windingTint = lerp(_WindingColorNeutral, _WindingColorPositive, saturate(_WindingDirection));
-    windingTint = lerp(windingTint, _WindingColorNegative, saturate(- _WindingDirection));
-    float3 winding = lerp(lerp(1, _WindingColorSelection * 6.5, _SelectionFactor), windingTint * 9, _WindingFactor);
+    float3 selectionColor = lerp(1, _WindingColorSelection * 6.5, _SelectionFactor);
+    float3 windingColor = GetWindingTint(_WindingDirection) * 9;
+    float3 lightTint = lerp(selectionColor, windingColor, _WindingFactor);
     
-    lighting = hsv2rgb(hsv) * winding;
+    lighting = hsv2rgb(hsv) * lightTint;
     
     //float nearFactor = lerp(1, _NearLightFactor, );
 
