@@ -25,15 +25,20 @@ namespace RoyTheunissen.Winder.Rendering
 
         private void Update()
         {
-            float distance = Vector3.Distance(particleSystem.transform.position, target.position);
+            float distanceToTravel = Vector3.Distance(
+                particleSystem.transform.position, target.position);
+            distanceToTravel = Mathf.Abs(distanceToTravel - coreSize);
+
+            distanceToTravel += Mathf.PI * 2.0f * coreSize;
             
             ParticleSystem.MainModule mainModule = particleSystem.main;
             
             ParticleSystem.MinMaxCurve startLifetime = mainModule.startLifetime;
-            startLifetime.constantMax = distance * lifetimePerDistance + lifetimeExtra;
+            startLifetime.constantMax = distanceToTravel * lifetimePerDistance + lifetimeExtra;
             startLifetime.constantMin = startLifetime.constantMax * lifetimeNormalizedMin;
             mainModule.startLifetime = startLifetime;
 
+            forceFieldRange.startRange = coreSize;
             forceFieldVortexCore.endRange = coreSize;
             forceFieldVortexFar.endRange = coreSize + farSizeExtra;
         }
