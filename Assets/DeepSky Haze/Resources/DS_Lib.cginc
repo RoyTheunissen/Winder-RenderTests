@@ -243,7 +243,7 @@ inline void ComposeAtmosphere(inout fixed3 sceneColour, DSHazeData data)
     float depth = data.ray.z / 300;
     float height = saturate(data.ray.y / 300);
     fixed3 ac =
-        tex2D (_DS_FogAmbientLightGradient, fixed2(depth, height));
+        tex2D (_DS_FogAmbientLightGradient, fixed2(depth, height)) * _DS_FogAmbientLight;
         //lerp(fixed3(1, 0, 0), fixed3(0, 0, 1), depth);
         //fixed3(1, 0, 0);
         //_DS_FogAmbientLight;

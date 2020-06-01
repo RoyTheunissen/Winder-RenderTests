@@ -20,7 +20,7 @@
 
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
-        #pragma surface surf WaterColor fullforwardshadows vertex:vert
+        #pragma surface surf Watercolor fullforwardshadows vertex:vert
         
         #include "../Winder.cginc"
 
@@ -29,13 +29,6 @@
 
         sampler2D _MainTex;
         uniform float4 _MainTex_ST;
-
-        struct Input
-        {
-            float3 viewDir;
-            float4 screenPos;
-            float3 worldPos;
-        };
 
         half _Glossiness;
         half _Metallic;
@@ -50,15 +43,24 @@
         UNITY_INSTANCING_BUFFER_END(Props)
         
         #include "Watercolor.cginc"
+
+        struct Input
+        {
+            float3 viewDir;
+            float4 screenPos;
+            float3 worldPos;
+            PLANAR_WORLD_UVS_INPUT
+        };
         
         void vert (inout appdata_full v, out Input o)
         {
             UNITY_INITIALIZE_OUTPUT(Input,o);
+            PLANAR_WORLD_UVS_VERTEX(v, o);
         }
 
-        void surf (Input IN, inout SurfaceOutputStandard o)
+        void surf (Input IN, inout SurfaceOutputWatercolor o)
         {
-            NoisifyNormals(IN.screenPos, o);
+            NoisifyNormals(IN, o);
             
             // Albedo comes from a texture tinted by color
             float2 uv = IN.worldPos.xz;
@@ -71,7 +73,11 @@
             o.Smoothness = _Glossiness;
             o.Alpha = c.a;
             
-            o.Emission = DarkenNearZero(IN.worldPos) + _EmissionColor;
+            o.InverseLightFactor = GetDarknessFactor(IN.worldPos) - _NearLightFactor;
+            
+            AddNoisyLight(IN, o);
+            
+            o.Emission = _EmissionColor;
         }
         ENDCG
     }

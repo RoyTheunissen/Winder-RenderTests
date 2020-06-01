@@ -15,7 +15,7 @@
         
         [Space]
         _WindingFactor ("Winding Factor", Range(0.0, 1.0)) = 0.0
-        _WindingEmission ("Winding Emission", Range(0.0, 10.0)) = 9.0
+        _WindingEmission ("Winding Emission", Range(0.0, 200.0)) = 9.0
         _WindingDirection ("Winding Direction", Range(-1.0, 1.0)) = 1.0
     }
     SubShader

@@ -64,6 +64,10 @@ namespace UnityStandardAssets.CinematicEffects
             
             material.SetTexture("_ValueRampTex", valueRampTexture);
             material.SetTexture("_PaperTex", paperTexture);
+            
+            Camera camera = Camera.main;
+            material.SetMatrix("_ViewToWorldMatrix", camera.cameraToWorldMatrix);
+            material.SetMatrix("_ProjectionToViewMatrix", camera.nonJitteredProjectionMatrix.inverse);
 
             Graphics.Blit(source, destination, material);
 

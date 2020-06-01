@@ -20,6 +20,10 @@
             #include "..\Winder.cginc"
 
             #include "UnityCG.cginc"
+            
+            WINDING_FIELDS
+            
+            #include "Watercolor.cginc"
 
             struct appdata
             {
@@ -31,23 +35,41 @@
             {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
+                float3 viewDirWorld : TEXCOORD1;
             };
-
-            v2f vert (appdata v)
-            {
-                v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = v.uv;
-                return o;
-            }
-            
-            WINDING_FIELDS
-            
-            #include "Watercolor.cginc"
 
             sampler2D _MainTex;
             sampler2D _ValueRampTex;
             sampler2D _PaperTex;
+            
+            float4x4 _ViewToWorldMatrix;
+            float4x4 _ProjectionToViewMatrix;
+
+            v2f vert (appdata v)
+            {
+                v2f o;
+                    
+                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.uv = v.uv;
+                
+                float4 clipPos = o.vertex;
+                
+                // This is needed because the projection matrix can be flipped... If we don't compensate for that here then if
+                // another image effect is enabled, the view directions will be flipped.
+                clipPos.y *= _ProjectionParams.x;
+                
+                // Transform the clip position into camera or 'view' space. Note that we need to multiply by w.
+                float4 viewPos = mul(_ProjectionToViewMatrix, clipPos);
+                viewPos = float4(viewPos.xyz * viewPos.w, 1);
+                
+                // Camera of 'view' space can then easily be transformed into world space.
+                float3 worldPos = mul(_ViewToWorldMatrix, viewPos);
+                
+                // Now that we have a world position matching the screen vertex, it's business as usual.
+                o.viewDirWorld = UnityWorldSpaceViewDir(worldPos);
+                
+                return o;
+            }
             
             float push(float v)
             {
@@ -58,24 +80,20 @@
             {
                 fixed4 col = tex2D(_MainTex, i.uv);
                 
-                // just invert the colors
-                //col.rgb = 1 - col.rgb;
-                
+                // Don't convert the color into HSV and back because that messes with HDR values.
                 float3 hsv = rgb2hsv(col.rgb);
                 //hsv.b = max(hsv.b, 0);
                 //hsv.b = .5 + (hsv.b - .5) * 2.0;
                 //col = fixed4(hsv2rgb(hsv), col.a);
+                
                 col = fixed4(push(col.r), push(col.g), push(col.b), col.a);
                 
-                //col *= 1.5;
-                
-                float2 uv = GetScreenAlignedUv(i.uv, 2);
-                
+                // Apply a paper texture that is position on a plane at world-space z 0.
+                float2 uv = GetPlanarWorldSpaceUvFromViewDirection(normalize(i.viewDirWorld), float3(0, 0, 0)) / 4;
                 fixed3 paper = tex2D (_PaperTex, uv);
                 
-                col.rgb += (1 - paper.r) * 0.4 * (1 - saturate(hsv.b) * .5);
-                
-                //col.rgb *= tex2D (_ValueRampTex, float2(value, 0.5));
+                float paperValue = (1 - paper.r) * lerp(.2, .9, saturate(hsv.b));
+                col.rgb += paperValue;
                 
                 return col;
             }

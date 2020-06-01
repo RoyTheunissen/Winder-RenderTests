@@ -25,23 +25,12 @@
         #include "..\Winder.cginc"
         
         // Physically based Standard lighting model, and enable shadows on all light types
-        #pragma surface surf WaterColor fullforwardshadows vertex:vert
+        #pragma surface surf Watercolor fullforwardshadows vertex:vert
 
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
 
         sampler2D _MainTex;
-
-        struct Input
-        {
-            float2 uv_MainTex;
-            //float2 uv_PaperTex;
-            float2 uv_PerlinTex;
-            float2 uv_LightRampTex;
-            float3 viewDir;
-            float4 screenPos;
-            float3 worldPos;
-        };
 
         half _Glossiness;
         half _Metallic;
@@ -58,17 +47,30 @@
         UNITY_INSTANCING_BUFFER_END(Props)
         
         #include "Watercolor.cginc"
+
+        struct Input
+        {
+            float2 uv_MainTex;
+            //float2 uv_PaperTex;
+            float2 uv_PerlinTex;
+            float2 uv_LightRampTex;
+            float3 viewDir;
+            float4 screenPos;
+            float3 worldPos;
+            PLANAR_WORLD_UVS_INPUT
+        };
         
         void vert (inout appdata_full v, out Input o)
         {
             UNITY_INITIALIZE_OUTPUT(Input,o);
+            PLANAR_WORLD_UVS_VERTEX(v, o);
             
             //o.heightFallOff = saturate(v.color.r);
         }
 
-        void surf (Input IN, inout SurfaceOutputStandard o)
+        void surf (Input IN, inout SurfaceOutputWatercolor o)
         {
-            NoisifyNormals(IN.screenPos, o);
+            NoisifyNormals(IN, o);
             
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
@@ -79,31 +81,11 @@
             o.Smoothness = _Glossiness;
             o.Alpha = c.a;
             
-            float mask = 1;//IN.heightFallOff;
+            o.InverseLightFactor = GetDarknessFactor(IN.worldPos) - _NearLightFactor;
             
-            half rim = 1.0 - saturate(dot (normalize(IN.viewDir), o.Normal));
+            AddNoisyLight(IN, o);
             
-            float nDotL = saturate(dot(o.Normal, normalize(float3(-1, 0, 0.25))));
-            float threshold = .5;
-            float rimLight = saturate((nDotL - threshold) * 10 + threshold) * mask;
-            
-            //float4 highlightColor = UNITY_ACCESS_INSTANCED_PROP(Props, _HighlightColor);
-            
-            float selectionFactor = UNITY_ACCESS_INSTANCED_PROP(Props, _SelectionFactor) * mask;
-            
-            float rimPower = 3.2;
-            
-            float3 winding = 0;//selectionFactor * float3(.25, .75, 1) * 2;
-            
-            //o.Emission = lerp(min(0, (IN.worldPos.z - 10 + 1.5) / 10) * 1, 0, _NearLightFactor);
-            o.Emission = DarkenNearZero(IN.worldPos) + _EmissionColor + winding;
-            
-            // Moving paper texture to post effect
-            //o.Emission += (1 - paper.r) * .5;
-            
-            //o.Emission = _EmissionColor;
-            //o.Emission = _EmissionColor * mask + highlightColor.rgb * _HighlightMultiplier * pow (rim, rimPower / (selectionFactor + 0.01)) * mask * selectionFactor + selectionFactor * highlightColor * 0.2 * _HighlightMultiplier;
-            //o.Emission += rimLight * (.25 + selectionFactor);
+            o.Emission = _EmissionColor;
         }
         ENDCG
     }

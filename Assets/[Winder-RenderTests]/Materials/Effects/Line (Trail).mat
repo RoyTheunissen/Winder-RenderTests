@@ -76,7 +76,7 @@ Material:
     - _ThresholdStart: 0
     - _UVSec: 0
     - _WindingDirection: 1
-    - _WindingEmission: 9
+    - _WindingEmission: 20
     - _WindingFactor: 1
     - _ZWrite: 1
     m_Colors:

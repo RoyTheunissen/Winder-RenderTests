@@ -1,11 +1,19 @@
+#ifndef WATERCOLOR_INC
+#define WATERCOLOR_INC
+
 #include "UnityPBSLighting.cginc"
 
-#ifndef WINDER_INC
 #include "../Winder.cginc"
-#endif
+
+#define NoisifyNormals(input, output) NoisifyNormalsWorldSpace(input##.viewDirWorld, ##output##)
+
+#define AddNoisyLight(input, output) output##.ExtraLight = tex2D (_PerlinTex, GetPlanarWorldSpaceUvFromViewDirection(##input##.viewDirWorld) * .25);
 
 sampler2D _LightRampTex;
 sampler2D _PerlinTex;
+sampler2D _UvTestTex;
+
+float3 _AdditiveAmbientLight;
 
 float3 _WindingColorSelection;
 float3 _WindingColorPositive;
@@ -13,36 +21,28 @@ float3 _WindingColorNegative;
 float3 _WindingColorNeutral;
 
 float _NearLightFactor;
+float _InverseLightFactor;
+float _WrapAroundLightFactor;
+
+struct SurfaceOutputWatercolor
+{
+    fixed3 Albedo;      // base (diffuse or specular) color
+    fixed3 Normal;      // tangent space normal, if written
+    half3 Emission;
+    half Metallic;      // 0=non-metal, 1=metal
+    half Smoothness;    // 0=rough, 1=smooth
+    half Occlusion;     // occlusion (default 1)
+    fixed Alpha;        // alpha for transparencies
+    half InverseLightFactor; // allows us to remove light near the foreground.
+    half ExtraLight; // allows us to add extra light for color-mapped texture.
+};
 
 float valueRamp(float value)
 {
     return tex2D (_LightRampTex, float2(value, 0.5));
 }
 
-float2 GetScreenAlignedUv(float2 screenUv, float repeat = 1, float parallax = 0.23)
-{
-    float width = _ScreenParams.x / _ScreenParams.y;
-    screenUv.x *= width;
-    float2 uvOffset = float2(_WorldSpaceCameraPos.x, _WorldSpaceCameraPos.y) * parallax;
-    return screenUv * repeat + uvOffset;
-}
-
-float2 GetScreenAlignedUv(float4 screenPos, float repeat = 1, float parallax = 0.23)
-{
-    float2 screenUv = (screenPos.xy / max(0.0001, screenPos.w));
-    return GetScreenAlignedUv(screenUv, repeat, parallax);
-}
-
-float2 GetWorldAlignedUvStepped(float3 worldPos)
-{
-    float2 uv = float2(worldPos.x, worldPos.y) / 2;
-    float steps = 10;
-    uv.x += 3538;
-    //uv.x += 238 * floor(worldPos.z / steps);
-    return uv;
-}
-
-void NoisifyNormals(float4 screenPos, inout SurfaceOutputStandard o, float density = 2, float magnitude = 0.175)
+void NoisifyNormalsScreenSpace(float4 screenPos, inout SurfaceOutputWatercolor o, float density = 2, float magnitude = 0.175)
 {
     float2 uv = GetScreenAlignedUv(screenPos, density);
     fixed3 perlin = tex2D (_PerlinTex, uv);
@@ -50,30 +50,24 @@ void NoisifyNormals(float4 screenPos, inout SurfaceOutputStandard o, float densi
     o.Normal += float3(perlin.yz, 0) * magnitude;
 }
 
-float GetDarknessFactor(float3 worldPos, float startDistance = -1.5, float falloffDistance = 10)
+void NoisifyNormalsWorldSpace(float3 viewDirectionWorldSpace, inout SurfaceOutputWatercolor o,
+    float density = 0.25, float magnitude = 0.175)
+{
+    float2 uv = GetPlanarWorldSpaceUvFromViewDirection(viewDirectionWorldSpace) * density;
+    fixed3 perlin = tex2D (_PerlinTex, uv);
+    
+    o.Normal += float3(perlin.yz, 0) * magnitude;
+}
+
+float GetDarknessFactor(float3 worldPos, float startDistance = -0.25, float falloffDistance = 10)
 {
     return 1 - saturate((worldPos.z - startDistance) / falloffDistance);
 }
 
-float DarkenNearZero(float3 worldPos, float startDistance = -1.5, float falloffDistance = 10)
+float DarkenNearZero(float3 worldPos, float startDistance = -0.25, float falloffDistance = 10)
 {
     float darknessFactor = GetDarknessFactor(worldPos, startDistance, falloffDistance);
     return darknessFactor * (1 - _NearLightFactor) * -1;
-}
-
-float3 GetObjectPosition()
-{
-    return mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
-}
-
-float GetObjectSeed()
-{
-    float3 objectPosition = GetObjectPosition();
-    return
-        objectPosition.x * 348723.694857389
-        + objectPosition.y * 747374.57248724
-        + objectPosition.z * 5657385.946583
-        ;
 }
 
 float3 GetGrassOffset(float l)
@@ -110,6 +104,11 @@ float3 GetWindingTint(float direction)
     return lerp(windingTint, _WindingColorNegative, saturate(- direction));
 }
 
+float WrapAround(float value)
+{
+    return _WrapAroundLightFactor + value * (1 - _WrapAroundLightFactor);
+}
+
 // Main Physically Based BRDF
 // Derived from Disney work and based on Torrance-Sparrow micro-facet model
 //
@@ -121,10 +120,12 @@ float3 GetWindingTint(float direction)
 //  b) GGX
 // * Smith for Visiblity term
 // * Schlick approximation for Fresnel
-half4 BRDF_WaterColor_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity, half smoothness,
+half4 BRDF_Watercolor_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity, half smoothness,
     float3 normal, float3 viewDir,
-    UnityLight light, UnityIndirect gi)
+    UnityLight light, UnityIndirect gi, float inverseLightFactor, float extraLight)
 {
+    float lightFactor = saturate(1 - inverseLightFactor);
+
     float perceptualRoughness = SmoothnessToPerceptualRoughness (smoothness);
     float3 halfDir = Unity_SafeNormalize (float3(light.dir) + viewDir);
 
@@ -148,14 +149,14 @@ half4 BRDF_WaterColor_PBS (half3 diffColor, half3 specColor, half oneMinusReflec
     half nv = abs(dot(normal, viewDir));    // This abs allow to limit artifact
 #endif
 
-    half nl = saturate(dot(normal, light.dir));
+    half nl = WrapAround(saturate(dot(normal, light.dir)));
     float nh = saturate(dot(normal, halfDir));
 
     half lv = saturate(dot(light.dir, viewDir));
     half lh = saturate(dot(light.dir, halfDir));
 
     // Diffuse term
-    half diffuseTerm = DisneyDiffuse(nv, nl, lh, perceptualRoughness) * nl;
+    half diffuseTerm = DisneyDiffuse(nv, nl, lh, perceptualRoughness) * nl * lightFactor;
 
     // Specular term
     // HACK: theoretically we should divide diffuseTerm by Pi and not multiply specularTerm!
@@ -184,6 +185,7 @@ half4 BRDF_WaterColor_PBS (half3 diffColor, half3 specColor, half oneMinusReflec
 #if defined(_SPECULARHIGHLIGHTS_OFF)
     specularTerm = 0.0;
 #endif
+    specularTerm *= lightFactor;
 
     // surfaceReduction = Int D(NdotH) * NdotH * Id(NdotL>0) dH = 1/(roughness^2+1)
     half surfaceReduction;
@@ -199,28 +201,40 @@ half4 BRDF_WaterColor_PBS (half3 diffColor, half3 specColor, half oneMinusReflec
     //diffColor = 1;
 
     half grazingTerm = saturate(smoothness + (1-oneMinusReflectivity));
-    half3 lighting = (gi.diffuse + light.color * diffuseTerm)
+    
+    // Little experiment: multiply the diffuse color with the direct light only. This way a purely black albedo will still
+    // receive ambient light. This is not physically accurate but this will ensure that black objects still feel grounded
+    // in the world. Essentially this turns ambient light into a sort of 'color correction' except it can be overridden
+    // completely with emission, which you couldn't with color correction via a post processing effect.
+    half3 lighting = (gi.diffuse + light.color * diffuseTerm * diffColor)
                     + specularTerm * light.color * FresnelTerm (specColor, lh)
                     + surfaceReduction * gi.specular * FresnelLerp (specColor, grazingTerm, nv);
     
-    //lighting = 1;
-    //lighting = tex2Dlod (_LightRampTex, float4(lighting.r, .5, 0, 0));
+    // Let's try some free ambient light! This prevents the scene from going to full black which allows us to show
+    // more texture and perhaps is more in line with the look of watercolor.
+    lighting += 0.025;
+    lighting += extraLight * _AdditiveAmbientLight;
     
     half3 hsv = rgb2hsv(lighting.rgb);
     hsv.b = valueRamp(hsv.b);
     
-    float3 selectionColor = lerp(1, _WindingColorSelection * 6.5, _SelectionFactor);
-    float3 windingColor = GetWindingTint(_WindingDirection) * 9;
-    float3 lightTint = lerp(selectionColor, windingColor, _WindingFactor);
+    float selectionFactor = UNITY_ACCESS_INSTANCED_PROP(Props, _SelectionFactor);
+    float windingDirection = UNITY_ACCESS_INSTANCED_PROP(Props, _WindingDirection);
+    float windingFactor = UNITY_ACCESS_INSTANCED_PROP(Props, _WindingFactor);
+    
+    float3 selectionColor = lerp(1, _WindingColorSelection * 6.5, selectionFactor);
+    float3 windingColor = GetWindingTint(windingDirection) * 9;
+    float3 lightTint = lerp(selectionColor, windingColor, windingFactor);
     
     lighting = hsv2rgb(hsv) * lightTint;
     
     //float nearFactor = lerp(1, _NearLightFactor, );
 
-    return half4(diffColor * lighting, 1);
+    // Experiment: do not incorporate the diffuse color here, but only in the directional light.
+    return half4(lighting, 1);
 }
 
-inline UnityGI UnityGI_WaterColor(UnityGIInput data, half occlusion, half3 normalWorld)
+inline UnityGI UnityGI_Watercolor(UnityGIInput data, half occlusion, half3 normalWorld)
 {
     UnityGI o_gi;
     ResetUnityGI(o_gi);
@@ -282,14 +296,14 @@ inline UnityGI UnityGI_WaterColor(UnityGIInput data, half occlusion, half3 norma
     return o_gi;
 }
 
-inline UnityGI UnityGI_WaterColor (UnityGIInput data, half occlusion, half3 normalWorld, Unity_GlossyEnvironmentData glossIn)
+inline UnityGI UnityGI_Watercolor (UnityGIInput data, half occlusion, half3 normalWorld, Unity_GlossyEnvironmentData glossIn)
 {
-    UnityGI o_gi = UnityGI_WaterColor(data, occlusion, normalWorld);
+    UnityGI o_gi = UnityGI_Watercolor(data, occlusion, normalWorld);
     o_gi.indirect.specular = UnityGI_IndirectSpecular(data, occlusion, glossIn);
     return o_gi;
 }
 
-inline half4 LightingWaterColor (SurfaceOutputStandard s, float3 viewDir, UnityGI gi)
+inline half4 LightingWatercolor (SurfaceOutputWatercolor s, float3 viewDir, UnityGI gi)
 {
     s.Normal = normalize(s.Normal);
 
@@ -302,22 +316,24 @@ inline half4 LightingWaterColor (SurfaceOutputStandard s, float3 viewDir, UnityG
     half outputAlpha;
     s.Albedo = PreMultiplyAlpha (s.Albedo, s.Alpha, oneMinusReflectivity, /*out*/ outputAlpha);
 
-    half4 c = BRDF_WaterColor_PBS (s.Albedo, specColor, oneMinusReflectivity, s.Smoothness, s.Normal, viewDir, gi.light, gi.indirect);
+    half4 c = BRDF_Watercolor_PBS (s.Albedo, specColor, oneMinusReflectivity, s.Smoothness, s.Normal, viewDir, gi.light, gi.indirect, s.InverseLightFactor, s.ExtraLight);
     
     c.a = outputAlpha;
     
     return c;
 }
 
-inline void LightingWaterColor_GI (
-    SurfaceOutputStandard s,
+inline void LightingWatercolor_GI (
+    SurfaceOutputWatercolor s,
     UnityGIInput data,
     inout UnityGI gi)
 {
 #if defined(UNITY_PASS_DEFERRED) && UNITY_ENABLE_REFLECTION_BUFFERS
-    gi = UnityGI_WaterColor(data, s.Occlusion, s.Normal);
+    gi = UnityGI_Watercolor(data, s.Occlusion, s.Normal);
 #else
     Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(s.Smoothness, data.worldViewDir, s.Normal, lerp(unity_ColorSpaceDielectricSpec.rgb, s.Albedo, s.Metallic));
-    gi = UnityGI_WaterColor(data, s.Occlusion, s.Normal, g);
+    gi = UnityGI_Watercolor(data, s.Occlusion, s.Normal, g);
 #endif
 }
+
+#endif

@@ -8,6 +8,8 @@
         _Metallic ("Metallic", Range(0,1)) = 0.0
         _Cutoff ("Alpha cutoff", Range(0,1)) = 0.5
         _NearLightFactor ("Near Light Factor", Range(0,1)) = 1.0
+        _LightForeground ("Light (Foreground)", Range(0,1)) = 1.0
+        _LightBackground ("Light (Background)", Range(0,1)) = 1.0
         
         [HDR]
         _EmissionColor ("Emission", Color) = (0,0,0,1)
@@ -72,12 +74,33 @@
 
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
-        #pragma surface surf WaterColor fullforwardshadows vertex:vert alphatest:_Cutoff
+        #pragma surface surf Watercolor fullforwardshadows vertex:vert alphatest:_Cutoff
         
         #include "../Winder.cginc"
         
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
+
+        half _Glossiness;
+        half _Metallic;
+        fixed4 _Color;
+        fixed4 _ColorBG;
+        
+        float _LightForeground;
+        float _LightBackground;
+        
+        float4 _EmissionColor;
+        float4 _EmissionColorBG;
+
+        // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
+        // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
+        // #pragma instancing_options assumeuniformscaling
+        UNITY_INSTANCING_BUFFER_START(Props)
+            WINDING_FIELDS_INSTANCED
+            //UNITY_DEFINE_INSTANCED_PROP(float, _SelectionFactor)
+        UNITY_INSTANCING_BUFFER_END(Props)
+
+        #include "Watercolor.cginc"
 
         struct Input
         {
@@ -85,37 +108,20 @@
             float3 worldPos;
             float4 screenPos;
             float3 vertexColor;
+            PLANAR_WORLD_UVS_INPUT
         };
-
-        half _Glossiness;
-        half _Metallic;
-        fixed4 _Color;
-        fixed4 _ColorBG;
-        
-        float4 _EmissionColor;
-        float4 _EmissionColorBG;
-        
-        WINDING_FIELDS
-
-        // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
-        // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
-        // #pragma instancing_options assumeuniformscaling
-        UNITY_INSTANCING_BUFFER_START(Props)
-            //UNITY_DEFINE_INSTANCED_PROP(float, _SelectionFactor)
-        UNITY_INSTANCING_BUFFER_END(Props)
-
-        #include "Watercolor.cginc"
         
         void vert (inout appdata_full v, out Input o)
         {
             UNITY_INITIALIZE_OUTPUT(Input,o);
+            PLANAR_WORLD_UVS_VERTEX(v, o);
             
             o.vertexColor = v.color;
         }
 
-        void surf (Input IN, inout SurfaceOutputStandard o)
+        void surf (Input IN, inout SurfaceOutputWatercolor o)
         {
-            NoisifyNormals(IN.screenPos, o);
+            NoisifyNormals(IN, o);
         
             // Albedo comes from a texture tinted by color
             float bg = IN.worldPos.z / 10;
@@ -127,8 +133,9 @@
             o.Alpha = c.a;
             
             float darknessFactor = GetDarknessFactor(IN.worldPos, -1.0, 0.5);
-            float darknessEmissionPenalty = darknessFactor * (1 - _NearLightFactor) * -1;
-            o.Emission = darknessEmissionPenalty + lerp(_EmissionColor, _EmissionColorBG, bg) * IN.vertexColor;
+            o.InverseLightFactor = lerp(_LightForeground, _LightBackground, bg);
+            AddNoisyLight(IN, o);
+            o.Emission =  lerp(_EmissionColor, _EmissionColorBG, bg) * IN.vertexColor;
         }
         ENDCG
     }
